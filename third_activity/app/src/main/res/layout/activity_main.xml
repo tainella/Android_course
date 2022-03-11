@@ -1,36 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".MainActivity">
 
-    <LinearLayout
-            android:layout_width="244dp"
-            android:layout_height="175dp"
-            android:gravity="center"
-            android:orientation="vertical">
-        //порядок имеет значение
-        <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-        />
-
-        <Button
-                android:id="@+id/button2"
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="145dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center"
-                android:text="2"
-        />
-
-
-    </LinearLayout>
-    //просмотреть RecyclerView и наследника ListAdapter по видео
-
+    //RecyclerView - список
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+    />
 </LinearLayout>
