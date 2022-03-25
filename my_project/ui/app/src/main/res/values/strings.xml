@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">BlockUI</string>
+    <string name="app_desc">Click here to block the UI</string>
+
+    <string name="channel_id">BLOCKUI_CHANNEL</string>
+
+    <string name="tvInfo">Block the UI by clicking on the notification.</string>
+    <string name="tvDarkmode">Darken display</string>
+
+    <string name="btnHide">back</string>
+    <string name="btnClose">close</string>
+
+    <string name="btnUnlock">Unlock</string>
+
+    <string name="permissionTitle">Permission needed</string>
+    <string name="permissionDescription">Enable \'Display over other apps\'.</string>
+    <string name="permissionGoToSettings">Go to settings</string>
+</resources>
