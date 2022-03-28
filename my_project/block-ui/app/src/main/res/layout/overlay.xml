@@ -13,7 +13,7 @@
             android:layout_width="136dp"
             android:layout_height="53dp"
             android:gravity="center"
-            android:text="@string/btnUnlock"
+            android:text="@string/Sample"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="84dp"
             android:layout_marginBottom="636dp"

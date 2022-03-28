@@ -21,13 +21,8 @@ class BlockUIService : Service() {
     private var layoutOverlay: ConstraintLayout? = null
     //private var layoutKeyboard: TableLayout? = null
     private var textViewKey: TextView? = null
-
     private var windowManager: WindowManager? = null
     private var viewOverlay: View? = null
-
-    private var key: String = ""
-    private var currentInput: String = ""
-
     private var sharedPreferences: SharedPreferences? = null
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -37,30 +32,17 @@ class BlockUIService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (viewOverlay == null) {
             windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager?
-
             windowManager!!.addView(createView(), generateLayoutParams())
         }
         return START_NOT_STICKY
     }
 
-    private fun isComplete(): Boolean {
-        return currentInput == key
-    }
-
-    private fun closeOverlay() {
-        windowManager!!.removeView(viewOverlay)
-        viewOverlay = null
-    }
-
     private fun toggleVisibility() {
         if (textViewKey!!.visibility == View.VISIBLE) {
             textViewKey!!.visibility = View.INVISIBLE
-
-            val color = sharedPreferences!!.getInt("darkMode", 0)
-            layoutOverlay!!.setBackgroundColor(Color.argb(color, 0, 0, 0))
-        } else {
+        }
+        else {
             textViewKey!!.visibility = View.VISIBLE
-            layoutOverlay!!.background = getDrawable(R.color.black_overlay)
         }
     }
 
@@ -102,4 +84,6 @@ class BlockUIService : Service() {
         layoutParams.y = 0
         return layoutParams
     }
+
+
 }

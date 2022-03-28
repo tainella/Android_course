@@ -6,15 +6,22 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.provider.Settings
+import android.text.format.DateFormat
+import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import java.io.File
+import java.io.FileOutputStream
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -24,16 +31,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val sharedPreferences: SharedPreferences? = getSharedPreferences("BlockUI", Context.MODE_PRIVATE)
-        findViewById<SeekBar>(R.id.sbDarkmode).progress = sharedPreferences!!.getInt("darkMode", 0)
-
-        findViewById<SeekBar>(R.id.sbDarkmode).setOnSeekBarChangeListener(object: OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                sharedPreferences.edit().putInt("darkMode", progress).apply()
-            }
-
-            override fun onStartTrackingTouch(p0: SeekBar?) {}
-            override fun onStopTrackingTouch(p0: SeekBar?) {}
-        })
 
         findViewById<Button>(R.id.btnBack).setOnClickListener {
             onBackPressed()
@@ -55,13 +52,14 @@ class MainActivity : AppCompatActivity() {
     private fun initService() {
         if (checkOverlayDisplayPermission()) {
             startService()
-        } else {
+        }
+        else {
             requestOverlayDisplayPermission()
         }
     }
 
     private fun startService() {
-        val overlayService = Intent(this, ToastService::class.java)
+        val overlayService = Intent(this, BlockUIService::class.java)
         ContextCompat.startForegroundService(this, overlayService)
     }
 
@@ -81,5 +79,44 @@ class MainActivity : AppCompatActivity() {
 
         val dialog = builder.create()
         dialog.show()
+    }
+
+    fun doOn(v: View?) {
+        //do something
+    }
+
+    fun doOff(v: View?) {
+        //do something
+    }
+
+    private fun takeScreenshot() {
+        val now = Date()
+        DateFormat.format("yyyy-MM-dd_hh:mm:ss", now)
+        try {
+            val mPath: String = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg"
+
+            val v1: View = window.decorView.rootView
+            v1.setDrawingCacheEnabled(true)
+            val bitmap: Bitmap = Bitmap.createBitmap(v1.getDrawingCache())
+            v1.setDrawingCacheEnabled(false)
+            val imageFile = File(mPath)
+            val outputStream = FileOutputStream(imageFile)
+            val quality = 100
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+            outputStream.flush()
+            outputStream.close()
+            //в этом варианте открыть
+            openScreenshot(imageFile)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun openScreenshot(imageFile: File) {
+        val intent = Intent()
+        intent.action = Intent.ACTION_VIEW
+        val uri = Uri.fromFile(imageFile)
+        intent.setDataAndType(uri, "image/*")
+        startActivity(intent)
     }
 }
