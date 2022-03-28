@@ -7,11 +7,11 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 
 
 class ToastService : Service() {
-
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -22,13 +22,10 @@ class ToastService : Service() {
     }
 
     private fun createNotification() {
-        val channel = NotificationChannel(getString(R.string.channel_id), "BLOCKUI Notification Channel",
-            NotificationManager.IMPORTANCE_DEFAULT)
+        val channel = NotificationChannel(getString(R.string.channel_id), "BLOCKUI Notification Channel", NotificationManager.IMPORTANCE_DEFAULT)
         (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
 
-        //запуск сервиса
-        //Intent реагирует на нажатие
-        val notificationIntent = Intent(this, Service::class.java)
+        val notificationIntent = Intent(this, BlockUIService::class.java)
         val pendingIntent = PendingIntent.getService(this, 0, notificationIntent, 0)
         val notification = NotificationCompat.Builder(this, getString(R.string.channel_id))
                 .setContentTitle(getString(R.string.app_name))

@@ -1,0 +1,10 @@
+kind: pipeline
+type: docker
+name: build-android
+
+steps:
+- name: build
+  image: circleci/android:api-30
+  user: root
+  commands:
+    - ./gradlew assemble

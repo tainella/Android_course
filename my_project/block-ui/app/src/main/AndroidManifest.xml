@@ -16,7 +16,7 @@
         android:theme="@style/Theme.BlockUI">
 
         <service
-            android:name=".Service"
+            android:name=".BlockUIService"
             android:enabled="true"
             android:exported="true"
             android:stopWithTask="true" />
