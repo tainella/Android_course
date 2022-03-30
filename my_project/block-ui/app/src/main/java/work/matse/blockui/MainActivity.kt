@@ -6,7 +6,9 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -31,13 +33,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val sharedPreferences: SharedPreferences? = getSharedPreferences("BlockUI", Context.MODE_PRIVATE)
-
-        findViewById<Button>(R.id.btnBack).setOnClickListener {
-            onBackPressed()
-        }
-
-        findViewById<Button>(R.id.btnPowerOff).setOnClickListener {
-            finishAndRemoveTask()
+        findViewById<Button>(R.id.btnOn).setOnClickListener {
+            doOn()
         }
     }
 
@@ -51,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initService() {
         if (checkOverlayDisplayPermission()) {
-            startService()
+            //startService()
         }
         else {
             requestOverlayDisplayPermission()
@@ -81,12 +78,15 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    fun doOn(v: View?) {
-        //do something
-    }
-
-    fun doOff(v: View?) {
-        //do something
+    fun doOn() {
+        if (findViewById<Button>(R.id.btnOn).text == "Включить") {
+            findViewById<Button>(R.id.btnOn).setText("Выключить")
+            findViewById<Button>(R.id.btnOn).setBackgroundTintList(ColorStateList.valueOf(Color.BLACK))
+        }
+        else {
+            findViewById<Button>(R.id.btnOn).setText("Включить")
+            findViewById<Button>(R.id.btnOn).setBackgroundTintList(ColorStateList.valueOf(Color.BLUE))
+        }
     }
 
     private fun takeScreenshot() {
