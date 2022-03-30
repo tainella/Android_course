@@ -23,7 +23,7 @@
             android:id="@+id/btnOn"
             android:layout_width="186dp"
             android:layout_height="48dp"
-            android:layout_marginStart="120dp"
+            android:layout_marginStart="112dp"
             android:layout_marginBottom="364dp"
             android:width="128dp"
             android:text="@string/On"
