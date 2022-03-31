@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun startmyService() {
         val overlayService = Intent(this, BlockUIService::class.java)
-        ContextCompat.startForegroundService(this, overlayService)
+        //Thread.sleep(3000)
+        startService(overlayService)
     }
 
     private fun stopmyService() {

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.net.Uri
 import android.os.Build
@@ -65,7 +66,6 @@ class BlockUIService : Service() {
                 }
             }
         }
-
         viewOverlay!!.findViewById<Button>(R.id.btnBack).setOnClickListener {
             toggleVisibility()
         }
@@ -74,8 +74,11 @@ class BlockUIService : Service() {
     }
 
     private fun generateLayoutParams(): WindowManager.LayoutParams {
-        val layoutParams = WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN and WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT)
+        val layoutParams = WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN and WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT)
 
         layoutParams.gravity = Gravity.TOP or Gravity.RIGHT
         layoutParams.x = 0
