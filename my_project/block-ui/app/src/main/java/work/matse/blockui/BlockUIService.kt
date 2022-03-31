@@ -7,30 +7,26 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
 import android.os.IBinder
 import android.provider.MediaStore
-import android.text.format.DateFormat
 import android.view.*
 import android.widget.Button
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.doOnAttach
-import java.io.File
-import java.io.FileOutputStream
 import java.io.OutputStream
 import java.util.*
-
-
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.schedule
 
 class BlockUIService : Service() {
     private var windowManager: WindowManager? = null
     private var viewOverlay: View? = null
     private var sharedPreferences: SharedPreferences? = null
+    private var timer: Timer = Timer()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -47,9 +43,14 @@ class BlockUIService : Service() {
     private fun toggleVisibility() {
         if (viewOverlay!!.visibility == View.VISIBLE) {
             viewOverlay!!.visibility = View.INVISIBLE
+            timer.cancel() //отменяет таски
+            timer.purge() //убирает таски
         }
         else {
             viewOverlay!!.visibility = View.VISIBLE
+            timer.schedule(TimeUnit.MINUTES.toMillis(5000)) {
+
+            }
         }
     }
 
@@ -109,4 +110,7 @@ class BlockUIService : Service() {
             fos = imageUri?.let { resolver.openOutputStream(it) }
         }
     }
+
+
+
 }
