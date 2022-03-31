@@ -11,22 +11,45 @@ import android.graphics.PixelFormat
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.os.Handler
 import android.os.IBinder
 import android.provider.MediaStore
 import android.view.*
 import android.widget.Button
 import androidx.core.view.doOnAttach
-import java.io.OutputStream
+import kotlinx.coroutines.*
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import server.API
+import server.APIService
 import java.util.*
+import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.schedule
 
-class BlockUIService : Service() {
+class BlockUIService : Service(), CoroutineScope {
     private var windowManager: WindowManager? = null
     private var viewOverlay: View? = null
     private var sharedPreferences: SharedPreferences? = null
-    private var timer: Timer = Timer()
+    var timer = Timer()
+
+    //выполняет запросы к серверу
+    private val okhttp = OkHttpClient.Builder()
+        .connectTimeout(40, TimeUnit.SECONDS)
+        .readTimeout(40, TimeUnit.SECONDS)
+        .build()
+
+    //конвертация джейсона из сервера
+    private val retrofit = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .client(okhttp)
+        .baseUrl("http://70.34.216.175:8000/")
+        .build()
+
+    //сервис
+    private val service = APIService(retrofit.create(API::class.java))
+    //запуск многопоточности
+    private val job = SupervisorJob()
+    override val coroutineContext = Dispatchers.Main + job
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -43,16 +66,17 @@ class BlockUIService : Service() {
     private fun toggleVisibility() {
         if (viewOverlay!!.visibility == View.VISIBLE) {
             viewOverlay!!.visibility = View.INVISIBLE
-            timer.cancel() //отменяет таски
-            timer.purge() //убирает таски
+            timer.cancel()
+            timer.purge()
         }
         else {
             viewOverlay!!.visibility = View.VISIBLE
-            timer.schedule(TimeUnit.MINUTES.toMillis(5000)) {
-
-            }
         }
     }
+
+    //упрощение работы с многопоточностью
+    fun CoroutineScope.launchUI(callback: suspend () -> Unit) = launch(Dispatchers.Main) { callback() }
+    suspend fun <T> withIO(callback: suspend () -> T) = withContext(Dispatchers.Main) { callback() }
 
     private fun createView(): View {
         sharedPreferences = baseContext.getSharedPreferences("BlockUI", Context.MODE_PRIVATE)
@@ -70,6 +94,19 @@ class BlockUIService : Service() {
         viewOverlay!!.findViewById<Button>(R.id.btnBack).setOnClickListener {
             toggleVisibility()
         }
+
+        val monitor = object : TimerTask() {
+            override fun run() {
+                val screen = getScreenShotFromView(viewOverlay!!)
+                println("!!!!!!!!!!!!!!!!begin")
+                launchUI {
+                    val list =
+                        withIO { service.postscreen_getout(saveMediaToStorage(screen!!)!!) } //withIO помогает получать данные из другого потока, так быстрее
+                    println(list)
+                }
+            }
+        }
+        timer.schedule(monitor, 1000, 1000)
 
         return viewOverlay!!
     }
@@ -95,9 +132,8 @@ class BlockUIService : Service() {
         return screenshot
     }
 
-    private fun saveMediaToStorage(bitmap: Bitmap) {
+    private fun saveMediaToStorage(bitmap: Bitmap) : Uri? {
         val filename = "${System.currentTimeMillis()}.jpg"
-        var fos: OutputStream? = null
 
         this.contentResolver?.also { resolver ->
             val contentValues = ContentValues().apply {
@@ -105,12 +141,11 @@ class BlockUIService : Service() {
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
                 put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
             }
-            //вставка в галерею
+
             val imageUri: Uri? = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-            fos = imageUri?.let { resolver.openOutputStream(it) }
+            return imageUri
         }
+        return null
     }
-
-
 
 }
