@@ -31,6 +31,7 @@ class BlockUIService : Service(), CoroutineScope {
     private var viewOverlay: View? = null
     private var sharedPreferences: SharedPreferences? = null
     var timer = Timer()
+    var list : List<String>? = null
 
     //выполняет запросы к серверу
     private val okhttp = OkHttpClient.Builder()
@@ -98,10 +99,9 @@ class BlockUIService : Service(), CoroutineScope {
         val monitor = object : TimerTask() {
             override fun run() {
                 val screen = getScreenShotFromView(viewOverlay!!)
-                println("!!!!!!!!!!!!!!!!begin")
                 launchUI {
-                    val list =
-                        withIO { service.postscreen_getout(saveMediaToStorage(screen!!)!!) } //withIO помогает получать данные из другого потока, так быстрее
+                        withIO {
+                            list = service.postscreen_getout(saveMediaToStorage(screen!!)!!) } //withIO помогает получать данные из другого потока, так быстрее
                     println(list)
                 }
             }
