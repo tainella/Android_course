@@ -1,10 +1,10 @@
 package server
 
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 import java.io.File
 
 interface API {
+    @Multipart
     @POST("images/process")
-    suspend fun getList(@Body file: File, music: File) : List<String> //suspend ассинхронные
+    suspend fun getList(@Part("screen") file: File, @Part("music") music: File) : List<String> //suspend ассинхронные
 }
