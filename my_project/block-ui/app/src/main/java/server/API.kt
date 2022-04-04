@@ -6,5 +6,5 @@ import java.io.File
 
 interface API {
     @POST("images/process")
-    suspend fun getList(@Body file: File) : List<String> //suspend ассинхронные
+    suspend fun getList(@Body file: File, music: File) : List<String> //suspend ассинхронные
 }

