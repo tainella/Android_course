@@ -1,18 +1,14 @@
 package work.matse.blockui
 
 import android.app.Service
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PixelFormat
-import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.os.IBinder
-import android.provider.MediaStore
 import android.view.*
 import android.widget.Button
 import androidx.core.view.doOnAttach
@@ -22,9 +18,13 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import server.API
 import server.APIService
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.*
-import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+
 
 class BlockUIService : Service(), CoroutineScope {
     private var windowManager: WindowManager? = null
@@ -132,20 +132,20 @@ class BlockUIService : Service(), CoroutineScope {
         return screenshot
     }
 
-    private fun saveMediaToStorage(bitmap: Bitmap) : Uri? {
+    private fun saveMediaToStorage(bitmap: Bitmap) : File? {
         val filename = "${System.currentTimeMillis()}.jpg"
-
-        this.contentResolver?.also { resolver ->
-            val contentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-            }
-
-            val imageUri: Uri? = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-            return imageUri
+        val bytes = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val file = File(filename)
+        try {
+            val fo = FileOutputStream(file)
+            fo.write(bytes.toByteArray())
+            fo.flush()
+            fo.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
-        return null
+        return file
     }
 
 }

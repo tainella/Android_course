@@ -1,10 +1,10 @@
 package server
 
-import android.net.Uri
 import retrofit2.http.Body
 import retrofit2.http.POST
+import java.io.File
 
 interface API {
     @POST("images/process")
-    suspend fun getList(@Body image: Uri) : List<String> //suspend ассинхронные
+    suspend fun getList(@Body file: File) : List<String> //suspend ассинхронные
 }
