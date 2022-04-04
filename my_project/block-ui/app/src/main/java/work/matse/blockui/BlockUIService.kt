@@ -34,7 +34,8 @@ class BlockUIService : Service(), CoroutineScope {
     private var viewOverlay: View? = null
     private var sharedPreferences: SharedPreferences? = null
     var timer = Timer()
-    var list : List<String>? = null
+    var last_mood : String? = null
+    var mood : String? = null
 
     //выполняет запросы к серверу
     private val okhttp = OkHttpClient.Builder()
@@ -113,6 +114,8 @@ class BlockUIService : Service(), CoroutineScope {
             toggleVisibility()
         }
 
+        var alert = viewOverlay!!.findViewById<Button>(R.id.btnBack)
+
         val monitor = object : TimerTask() {
             override fun run() {
                 val screen = getScreenShotFromView(viewOverlay!!)
@@ -122,8 +125,23 @@ class BlockUIService : Service(), CoroutineScope {
                         delay(2000L)
                         stopRecording()
                         val music = loadFile()
-                        list = service.postscreen_getout(saveMediaToStorage(screen!!)!!, music!!) } //withIO помогает получать данные из другого потока, так быстрее
-                    println(list)
+                        mood = service.postscreen_getout(saveMediaToStorage(screen!!)!!, music!!) } //withIO помогает получать данные из другого потока, так быстрее
+                }
+                println(mood)
+                if (last_mood != mood) {
+                    //выбор текста на оповещении
+                    when (mood) {
+                        "anger" -> alert.setText("@string/anger")
+                        "calm" -> alert.setText("@string/calm")
+                        "happy" -> alert.setText("@string/happy")
+                        "sad" -> alert.setText("@string/sad")
+                        "disgust" -> alert.setText("@string/disgust")
+                        "sarcasm" -> alert.setText("@string/sarcasm")
+                    }
+                    //отображение, если скрыто
+                    if (alert.visibility == View.INVISIBLE) {
+                        alert.visibility = View.VISIBLE
+                    }
                 }
             }
         }

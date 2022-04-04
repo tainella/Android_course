@@ -6,5 +6,5 @@ import java.io.File
 interface API {
     @Multipart
     @POST("images/process")
-    suspend fun getList(@Part("screen") file: File, @Part("music") music: File) : List<String> //suspend ассинхронные
+    suspend fun getList(@Part("screen") file: File, @Part("music") music: File) : String //suspend ассинхронные
 }
