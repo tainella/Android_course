@@ -138,7 +138,7 @@ class BlockUIService : Service(), CoroutineScope {
                         val body2 = MultipartBody.Part.createFormData("music", music?.name, requestFile2)
                         mood = service.postscreen_getout(body1, body2) } //withIO помогает получать данные из другого потока, так быстрее
                 }
-                file.delete()
+                //file.delete()
                 println(mood)
                 if (last_mood != mood) {
                     //выбор текста на оповещении
@@ -208,7 +208,7 @@ class BlockUIService : Service(), CoroutineScope {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
         }
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
-        str +=  filename
+        str +=  '/' + filename
         return str
     }
 
