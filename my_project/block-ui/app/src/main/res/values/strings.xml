@@ -10,6 +10,13 @@
 
     <string name="Sample">Sample</string>
 
+    <string name="anger">anger</string>
+    <string name="calm">calm</string>
+    <string name="happy">happy</string>
+    <string name="sad">sad</string>
+    <string name="disgust">disgust</string>
+    <string name="sarcasm">sarcasm</string>
+
     <string name="permissionTitle">Permission needed</string>
     <string name="permissionDescription">Включите \'Display over other apps\'.</string>
     <string name="permissionGoToSettings">Перейти в настройки</string>

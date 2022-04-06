@@ -1,32 +1,38 @@
 package work.matse.blockui
 
 import android.app.Service
+import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.provider.MediaStore
 import android.view.*
 import android.widget.Button
-import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.view.doOnAttach
 import kotlinx.coroutines.*
+import okhttp3.MediaType
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import server.API
 import server.APIService
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.util.*
 import java.util.concurrent.TimeUnit
+
 
 
 class BlockUIService : Service(), CoroutineScope {
@@ -119,17 +125,24 @@ class BlockUIService : Service(), CoroutineScope {
         val monitor = object : TimerTask() {
             override fun run() {
                 val screen = getScreenShotFromView(viewOverlay!!)
+                val file = File(saveMediaToStorage(screen!!)!!)
+                val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file)
+                val body1 = MultipartBody.Part.createFormData("image", file?.name, requestFile)
                 launchUI {
                     withIO {
                         startRecording()
                         delay(2000L)
                         stopRecording()
                         val music = loadFile()
-                        mood = service.postscreen_getout(saveMediaToStorage(screen!!)!!, music!!) } //withIO помогает получать данные из другого потока, так быстрее
+                        val requestFile2 = RequestBody.create(MediaType.parse("audio/mp3"), music)
+                        val body2 = MultipartBody.Part.createFormData("music", music?.name, requestFile2)
+                        mood = service.postscreen_getout(body1, body2) } //withIO помогает получать данные из другого потока, так быстрее
                 }
+                file.delete()
                 println(mood)
                 if (last_mood != mood) {
                     //выбор текста на оповещении
+                    last_mood = mood
                     when (mood) {
                         "anger" -> alert.setText("@string/anger")
                         "calm" -> alert.setText("@string/calm")
@@ -171,20 +184,32 @@ class BlockUIService : Service(), CoroutineScope {
         return screenshot
     }
 
-    private fun saveMediaToStorage(bitmap: Bitmap) : File? {
+    private fun saveMediaToStorage(bitmap: Bitmap) : String? {
         val filename = "${System.currentTimeMillis()}.jpg"
-        val bytes = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-        val file = File(filename)
-        try {
-            val fo = FileOutputStream(file)
-            fo.write(bytes.toByteArray())
-            fo.flush()
-            fo.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
+        var fos: OutputStream? = null
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            contentResolver?.also { resolver ->
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                }
+                val imageUri: Uri? =
+                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                fos = imageUri?.let { resolver.openOutputStream(it) }
+            }
+        } else {
+            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val image = File(imagesDir, filename)
+            fos = FileOutputStream(image)
         }
-        return file
+        fos?.use {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+        }
+        var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
+        str +=  filename
+        return str
     }
 
     private fun loadFile() : File? {
