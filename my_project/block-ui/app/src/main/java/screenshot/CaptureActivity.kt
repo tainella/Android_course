@@ -1,6 +1,5 @@
 package screenshot
 
-
 import android.app.Activity
 import android.app.Service
 import android.content.Intent
@@ -34,7 +33,7 @@ class CaptureActivity : Activity() {
                     val intent = Intent(this, CaptureService::class.java)
                         .setAction(CaptureService.ACTION_ENABLE_CAPTURE)
                     startService(intent)
-                }, 1000)
+                }, 100)
             } else {
                 projection = null
             }

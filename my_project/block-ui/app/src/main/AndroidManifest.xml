@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
             android:allowBackup="true"
@@ -22,21 +22,20 @@
             android:usesCleartextTraffic="true">
         <activity
                 android:name="screenshot.CaptureActivity"
-                android:exported="true"
-                android:foregroundServiceType="mediaProjection"/>
+                android:exported="true"/>
 
         <service
                 android:name="screenshot.CaptureService"
-                android:foregroundServiceType="mediaProjection"
                 android:enabled="true"
                 android:exported="true"
+                android:foregroundServiceType="mediaProjection"
                 android:stopWithTask="true">
         </service>
         <service
                 android:name=".BlockUIService"
-                android:foregroundServiceType="mediaProjection"
                 android:enabled="true"
                 android:exported="true"
+                android:foregroundServiceType="mediaProjection"
                 android:stopWithTask="true"/>
 
         <activity android:name=".MainActivity">
