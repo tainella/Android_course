@@ -4,7 +4,7 @@
 
     <string name="channel_id">BLOCKUI_CHANNEL</string>
 
-    <string name="tvInfo"> Помощник по распознаванию эмоций</string>
+    <string name="tvInfo">Помощник по распознаванию эмоций</string>
     <string name="On">Включить</string>
     <string name="Off">Выключить</string>
 

