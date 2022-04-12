@@ -1,21 +1,23 @@
 package work.matse.blockui
 
 import android.app.Service
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.media.MediaRecorder
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
-import android.provider.MediaStore
+import android.provider.AlarmClock.EXTRA_MESSAGE
 import android.view.*
 import android.widget.Button
+import android.widget.Toast
+import androidx.core.app.ServiceCompat.stopForeground
+import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import kotlinx.coroutines.*
 import okhttp3.MediaType
@@ -24,14 +26,11 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import screenshot.Capture
 import screenshot.CaptureService
 import server.API
 import server.APIService
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStream
 import java.lang.Thread.sleep
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -68,7 +67,6 @@ class BlockUIService : Service(), CoroutineScope {
     private var output: String? = null
     private var mediaRecorder: MediaRecorder? = null
     private var state: Boolean = false
-    private var recordingStopped: Boolean = false
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -79,6 +77,7 @@ class BlockUIService : Service(), CoroutineScope {
             windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager?
             windowManager!!.addView(createView(), generateLayoutParams())
             //звук
+            
             output = Environment.getExternalStorageDirectory().absolutePath + "/recording.mp3"
             mediaRecorder = MediaRecorder()
 
@@ -88,17 +87,6 @@ class BlockUIService : Service(), CoroutineScope {
             mediaRecorder?.setOutputFile(output)
         }
         return START_NOT_STICKY
-    }
-
-    private fun toggleVisibility() {
-        if (viewOverlay!!.visibility == View.VISIBLE) {
-            viewOverlay!!.visibility = View.INVISIBLE
-            timer.cancel()
-            timer.purge()
-        }
-        else {
-            viewOverlay!!.visibility = View.VISIBLE
-        }
     }
 
     //упрощение работы с многопоточностью
@@ -118,20 +106,12 @@ class BlockUIService : Service(), CoroutineScope {
                 }
             }
         }
-        viewOverlay!!.findViewById<Button>(R.id.btnBack).setOnClickListener {
-            toggleVisibility()
-        }
-
-        var alert = viewOverlay!!.findViewById<Button>(R.id.btnBack)
-
+        val screenService : Intent? = Intent(getBaseContext(), CaptureService::class.java)
+        ContextCompat.startForegroundService(getBaseContext(), screenService!!)
+        var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
+        str += "/inaut.jpg"
         val monitor = object : TimerTask() {
             override fun run() {
-                val screenService : Intent? = Intent(getBaseContext(), CaptureService::class.java)
-                startService(screenService) //getScreenShotFromView(viewOverlay!!)
-                //stopService(screenService)
-                sleep(10000)
-                var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
-                str += "/inaut.jpg"
                 val file = File(str)
                 val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file)
                 val body1 = MultipartBody.Part.createFormData("image", file?.name, requestFile)
@@ -147,26 +127,53 @@ class BlockUIService : Service(), CoroutineScope {
                 }
                 //file.delete()
                 println(mood)
+
                 if (last_mood != mood) {
                     //выбор текста на оповещении
                     last_mood = mood
                     when (mood) {
-                        "anger" -> alert.setText("@string/anger")
-                        "calm" -> alert.setText("@string/calm")
-                        "happy" -> alert.setText("@string/happy")
-                        "sad" -> alert.setText("@string/sad")
-                        "disgust" -> alert.setText("@string/disgust")
-                        "sarcasm" -> alert.setText("@string/sarcasm")
-                    }
-                    //отображение, если скрыто
-                    if (alert.visibility == View.INVISIBLE) {
-                        alert.visibility = View.VISIBLE
+                        "anger" -> {
+                            val overlayService = Intent(getBaseContext(), ToastService::class.java).apply {
+                                putExtra(EXTRA_MESSAGE, "anger")
+                            }
+                            ContextCompat.startForegroundService(getBaseContext(), overlayService)
+                        }//alert.setText("@string/anger")
+                        "calm" -> {
+                            val overlayService = Intent(getBaseContext(), ToastService::class.java).apply {
+                                putExtra(EXTRA_MESSAGE, "calm")
+                            }
+                            ContextCompat.startForegroundService(getBaseContext(), overlayService)
+                        } //alert.setText("@string/calm")
+                        "happy" -> {
+                            val overlayService = Intent(getBaseContext(), ToastService::class.java).apply {
+                                putExtra(EXTRA_MESSAGE, "happy")
+                            }
+                            ContextCompat.startForegroundService(getBaseContext(), overlayService)
+                        } //alert.setText("@string/happy")
+                        "sad" -> {
+                            val overlayService = Intent(getBaseContext(), ToastService::class.java).apply {
+                                putExtra(EXTRA_MESSAGE, "sad")
+                            }
+                            ContextCompat.startForegroundService(getBaseContext(), overlayService)
+                        } //alert.setText("@string/sad")
+                        "disgust" -> {
+                            val overlayService = Intent(getBaseContext(), ToastService::class.java).apply {
+                                putExtra(EXTRA_MESSAGE, "disgust")
+                            }
+                            ContextCompat.startForegroundService(getBaseContext(), overlayService)
+                        } //alert.setText("@string/disgust")
+                        "sarcasm" -> {
+                            val overlayService = Intent(getBaseContext(), ToastService::class.java).apply {
+                                putExtra(EXTRA_MESSAGE, "sarcasm")
+                            }
+                            ContextCompat.startForegroundService(getBaseContext(), overlayService)
+                        } //alert.setText("@string/sarcasm")
                     }
                 }
             }
         }
-        timer.schedule(monitor, 1000, 1000)
 
+        timer.schedule(monitor, 1000, 1000)
         return viewOverlay!!
     }
 
