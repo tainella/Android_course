@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startmyService() {
         val overlayService = Intent(this, BlockUIService::class.java)
-        startForegroundService(overlayService)
+        startService(overlayService)
     }
 
     private fun stopmyService() {
