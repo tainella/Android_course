@@ -26,9 +26,9 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import screenshot.CaptureService
-import server.API
-import server.APIService
+import work.matse.blockui.screenshot.CaptureService
+import work.matse.blockui.server.API
+import work.matse.blockui.server.APIService
 import java.io.File
 import java.io.IOException
 import java.lang.Thread.sleep
@@ -77,7 +77,7 @@ class BlockUIService : Service(), CoroutineScope {
             windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager?
             windowManager!!.addView(createView(), generateLayoutParams())
             //звук
-            
+
             output = Environment.getExternalStorageDirectory().absolutePath + "/recording.mp3"
             mediaRecorder = MediaRecorder()
 
@@ -85,6 +85,11 @@ class BlockUIService : Service(), CoroutineScope {
             mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             mediaRecorder?.setOutputFile(output)
+
+            val filename = "inaut.jpg"
+            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val image = File(imagesDir, filename)
+            image.createNewFile()
         }
         return START_NOT_STICKY
     }
@@ -110,9 +115,12 @@ class BlockUIService : Service(), CoroutineScope {
         ContextCompat.startForegroundService(getBaseContext(), screenService!!)
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
         str += "/inaut.jpg"
+        Thread.sleep(2000)
         val monitor = object : TimerTask() {
             override fun run() {
+                println("/////////STARTED//////")
                 val file = File(str)
+                println("!!!!opened!!!!!!")
                 val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file)
                 val body1 = MultipartBody.Part.createFormData("image", file?.name, requestFile)
                 launchUI {
@@ -120,10 +128,12 @@ class BlockUIService : Service(), CoroutineScope {
                         startRecording()
                         delay(2000L)
                         stopRecording()
+                        println("%%%%%%%%TRYING TO LOAD MUSIC%%%%%%%%")
                         val music = loadFile()
                         val requestFile2 = RequestBody.create(MediaType.parse("audio/mp3"), music)
                         val body2 = MultipartBody.Part.createFormData("music", music?.name, requestFile2)
-                        mood = service.postscreen_getout(body1, body2) } //withIO помогает получать данные из другого потока, так быстрее
+                        mood = service.postscreen_getout(body1, body2)
+                    } //withIO помогает получать данные из другого потока, так быстрее
                 }
                 //file.delete()
                 println(mood)

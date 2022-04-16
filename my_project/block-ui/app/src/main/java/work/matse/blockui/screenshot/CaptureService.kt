@@ -1,4 +1,4 @@
-package screenshot
+package work.matse.blockui.screenshot
 
 import android.app.Notification
 import android.app.Service
@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import android.provider.MediaStore
+import androidx.core.content.ContextCompat
 import work.matse.blockui.R
 import java.io.File
 import java.io.FileOutputStream
@@ -24,19 +25,9 @@ class CaptureService : Service() {
 
     private val capture = Capture(this)
 
-    /*val notification: Notification = Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
-        .setContentTitle(getText(R.string.notification_title))
-        .setContentText(getText(R.string.notification_message))
-        .setSmallIcon(R.drawable.icon)
-        .setContentIntent(pendingIntent)
-        .setTicker(getText(R.string.ticker_text))
-        .build()*/
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        var notification: Notification? = null
-        //this.startForeground(notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
+        println("=======CAPTURE SERVICE STARTED======")
         enableCapture()
-        //onEnableCapture()
         return Service.START_STICKY
     }
 
@@ -76,6 +67,7 @@ class CaptureService : Service() {
         fos?.close()
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
         str += "/$filename"
+        println("============saved===========")
         return str
     }
 

@@ -1,4 +1,4 @@
-package screenshot
+package work.matse.blockui.screenshot
 
 import android.app.Activity
 import android.app.Service
@@ -7,12 +7,12 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
 import android.os.Handler
-import android.widget.Toast
+
 
 class CaptureActivity : Activity() {
 
     companion object {
-        private const val REQUEST_CAPTURE = 1
+        private const val REQUEST_CAPTURE = 1//13
 
         var projection: MediaProjection? = null
     }
@@ -21,6 +21,7 @@ class CaptureActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        println("@@@@@@@CAPTURE ACTIVITY STARTED@@@@@@")
         mediaProjectionManager = getSystemService(Service.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), REQUEST_CAPTURE)
     }

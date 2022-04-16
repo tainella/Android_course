@@ -1,4 +1,4 @@
-package server
+package work.matse.blockui.server
 
 import okhttp3.MultipartBody
 import retrofit2.http.*

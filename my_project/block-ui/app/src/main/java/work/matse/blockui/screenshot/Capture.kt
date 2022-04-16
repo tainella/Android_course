@@ -1,4 +1,4 @@
-package screenshot
+package work.matse.blockui.screenshot
 
 import android.annotation.SuppressLint
 import android.content.Context

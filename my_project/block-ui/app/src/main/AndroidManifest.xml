@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="work.matse.blockui">
 
@@ -21,11 +22,11 @@
             android:theme="@style/Theme.BlockUI"
             android:usesCleartextTraffic="true">
         <activity
-                android:name="screenshot.CaptureActivity"
+                android:name=".screenshot.CaptureActivity"
                 android:exported="true"/>
 
         <service
-                android:name="screenshot.CaptureService"
+                android:name=".screenshot.CaptureService"
                 android:enabled="true"
                 android:exported="true"
                 android:foregroundServiceType="mediaProjection"
@@ -49,6 +50,9 @@
 
         <service
                 android:name=".ToastService"
+                android:enabled="true"
+                android:exported="true"
+                android:foregroundServiceType="mediaProjection"
                 android:stopWithTask="true"/>
     </application>
 

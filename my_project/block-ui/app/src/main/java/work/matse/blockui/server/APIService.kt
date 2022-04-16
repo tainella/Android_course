@@ -1,4 +1,4 @@
-package server
+package work.matse.blockui.server
 
 import android.net.Uri
 import okhttp3.MultipartBody
