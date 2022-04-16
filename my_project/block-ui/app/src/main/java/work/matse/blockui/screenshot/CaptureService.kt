@@ -1,21 +1,25 @@
 package work.matse.blockui.screenshot
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.NotificationManager.IMPORTANCE_NONE
 import android.app.Service
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import android.provider.MediaStore
-import androidx.core.content.ContextCompat
+import androidx.core.app.NotificationCompat
 import work.matse.blockui.R
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+
 
 class CaptureService : Service() {
     companion object {
@@ -27,9 +31,43 @@ class CaptureService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         println("=======CAPTURE SERVICE STARTED======")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // create notification channel
+            /*val channelId = NotificationChannel("work.matse.blockui","my_service", IMPORTANCE_NONE)
+
+            val builder = NotificationCompat.Builder(this, channelId.toString())
+                .setSmallIcon(R.drawable.ic_notifications_active_black_24dp)
+                .setContentTitle("Title")
+                .setContentText("frg")
+                .setPriority(PRIORITY_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+
+            val notification: Notification = builder.build()
+
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.notify(1, notification)
+            */
+            val NOTIFICATION_CHANNEL_ID = "com.example.simpleapp"
+            val channelName = "My Background Service"
+            val chan = NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, IMPORTANCE_NONE)
+            chan.lightColor = Color.BLUE
+            chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+            val manager = (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)!!
+            manager!!.createNotificationChannel(chan)
+
+            val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            val notification = notificationBuilder.setOngoing(true)
+                .setSmallIcon(R.drawable.ic_notifications_active_black_24dp)
+                .setContentTitle("App is running in background")
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build()
+            startForeground(100000, notification)
+        }
         enableCapture()
         return Service.START_STICKY
     }
+
 
     private fun enableCapture() {
         if (CaptureActivity.projection == null) {

@@ -111,8 +111,10 @@ class BlockUIService : Service(), CoroutineScope {
                 }
             }
         }
-        val screenService : Intent? = Intent(getBaseContext(), CaptureService::class.java)
-        ContextCompat.startForegroundService(getBaseContext(), screenService!!)
+        val screenService : Intent? = Intent(baseContext, CaptureService::class.java)
+        //ContextCompat.startForegroundService(baseContext, screenService!!)
+        //????????????
+        startService(screenService!!)
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
         str += "/inaut.jpg"
         Thread.sleep(2000)
@@ -132,7 +134,7 @@ class BlockUIService : Service(), CoroutineScope {
                         val music = loadFile()
                         val requestFile2 = RequestBody.create(MediaType.parse("audio/mp3"), music)
                         val body2 = MultipartBody.Part.createFormData("music", music?.name, requestFile2)
-                        mood = service.postscreen_getout(body1, body2)
+                        //mood = service.postscreen_getout(body1, body2)
                     } //withIO помогает получать данные из другого потока, так быстрее
                 }
                 //file.delete()

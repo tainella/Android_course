@@ -36,7 +36,6 @@
                 android:name=".BlockUIService"
                 android:enabled="true"
                 android:exported="true"
-                android:foregroundServiceType="mediaProjection"
                 android:stopWithTask="true"/>
 
         <activity android:name=".MainActivity">
@@ -52,7 +51,6 @@
                 android:name=".ToastService"
                 android:enabled="true"
                 android:exported="true"
-                android:foregroundServiceType="mediaProjection"
                 android:stopWithTask="true"/>
     </application>
 
