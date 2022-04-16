@@ -85,11 +85,6 @@ class BlockUIService : Service(), CoroutineScope {
             mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             mediaRecorder?.setOutputFile(output)
-
-            val filename = "inaut.jpg"
-            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            val image = File(imagesDir, filename)
-            image.createNewFile()
         }
         return START_NOT_STICKY
     }
@@ -112,8 +107,6 @@ class BlockUIService : Service(), CoroutineScope {
             }
         }
         val screenService : Intent? = Intent(baseContext, CaptureService::class.java)
-        //ContextCompat.startForegroundService(baseContext, screenService!!)
-        //????????????
         startService(screenService!!)
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
         str += "/inaut.jpg"

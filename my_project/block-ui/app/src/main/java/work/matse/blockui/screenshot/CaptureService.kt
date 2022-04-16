@@ -19,6 +19,8 @@ import work.matse.blockui.R
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.nio.file.Files
+import java.util.*
 
 
 class CaptureService : Service() {
@@ -28,25 +30,11 @@ class CaptureService : Service() {
     }
 
     private val capture = Capture(this)
+    var timer = Timer()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        println("=======CAPTURE SERVICE STARTED======")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // create notification channel
-            /*val channelId = NotificationChannel("work.matse.blockui","my_service", IMPORTANCE_NONE)
-
-            val builder = NotificationCompat.Builder(this, channelId.toString())
-                .setSmallIcon(R.drawable.ic_notifications_active_black_24dp)
-                .setContentTitle("Title")
-                .setContentText("frg")
-                .setPriority(PRIORITY_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-
-            val notification: Notification = builder.build()
-
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.notify(1, notification)
-            */
             val NOTIFICATION_CHANNEL_ID = "com.example.simpleapp"
             val channelName = "My Background Service"
             val chan = NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, IMPORTANCE_NONE)
@@ -65,6 +53,7 @@ class CaptureService : Service() {
             startForeground(100000, notification)
         }
         enableCapture()
+
         return Service.START_STICKY
     }
 
@@ -96,7 +85,9 @@ class CaptureService : Service() {
             }
         } else {
             val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            val image = File(imagesDir, filename)
+            var image = File(imagesDir, filename)
+            image.delete()
+            image = File(imagesDir, filename)
             fos = FileOutputStream(image)
         }
         fos?.use {
@@ -105,16 +96,20 @@ class CaptureService : Service() {
         fos?.close()
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
         str += "/$filename"
-        println("============saved===========")
         return str
     }
 
     private fun onEnableCapture() {
         CaptureActivity.projection?.run {
             capture.run(this) {
-                saveMediaToStorage(capture.main_bitmap!!)
-                println("SAVED")
-                capture.stop()
+                val monitor = object : TimerTask() {
+                    override fun run() {
+                        saveMediaToStorage(capture.main_bitmap!!)
+                        println("SAVED")
+                        capture.stop()
+                    }
+                }
+                timer.schedule(monitor, 1000, 1000)
             }
         }
     }
