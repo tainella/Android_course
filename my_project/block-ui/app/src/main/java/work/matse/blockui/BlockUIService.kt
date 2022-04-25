@@ -77,14 +77,17 @@ class BlockUIService : Service(), CoroutineScope {
             windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager?
             windowManager!!.addView(createView(), generateLayoutParams())
             //звук
-
             output = Environment.getExternalStorageDirectory().absolutePath + "/recording.mp3"
+            if (!File(output).exists()) {
+                File(output).createNewFile()
+            }
             mediaRecorder = MediaRecorder()
 
             mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
             mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             mediaRecorder?.setOutputFile(output)
+            mediaRecorder?.setMaxDuration(3000)
         }
         return START_NOT_STICKY
     }
@@ -112,9 +115,7 @@ class BlockUIService : Service(), CoroutineScope {
         str += "/inaut.jpg"
         val monitor = object : TimerTask() {
             override fun run() {
-                println("/////////STARTED//////")
                 val file = File(str)
-                println("!!!!opened!!!!!!")
                 val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file)
                 val body1 = MultipartBody.Part.createFormData("image", file?.name, requestFile)
                 launchUI {
@@ -123,7 +124,7 @@ class BlockUIService : Service(), CoroutineScope {
                         delay(2000L)
                         stopRecording()
                         println("%%%%%%%%TRYING TO LOAD MUSIC%%%%%%%%")
-                        val music = loadFile()
+                        val music = File(Environment.getExternalStorageDirectory().absolutePath + "/recording.mp3")
                         val requestFile2 = RequestBody.create(MediaType.parse("audio/mp3"), music)
                         val body2 = MultipartBody.Part.createFormData("music", music?.name, requestFile2)
                         //mood = service.postscreen_getout(body1, body2)
@@ -201,11 +202,6 @@ class BlockUIService : Service(), CoroutineScope {
         v.draw(canvas)
 
         return screenshot
-    }
-
-    private fun loadFile() : File? {
-        val file = File("/recording.mp3")
-        return file
     }
 
     private fun startRecording() {

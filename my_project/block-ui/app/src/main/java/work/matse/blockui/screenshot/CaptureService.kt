@@ -32,6 +32,10 @@ class CaptureService : Service() {
 
     private val capture = Capture(this)
     var timer = Timer()
+    val filename = "inaut.jpg"
+    val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+    var fos: OutputStream? = null
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -70,10 +74,7 @@ class CaptureService : Service() {
     }
 
     private fun saveMediaToStorage(bitmap: Bitmap) : String? {
-        val filename = "inaut.jpg"
-        var fos: OutputStream? = null
-        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (File(imagesDir, filename).exists()) {
                 File(imagesDir, filename).delete()
             }
@@ -86,11 +87,13 @@ class CaptureService : Service() {
                 val imageUri: Uri? = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 fos = imageUri?.let { resolver.openOutputStream(it) }
             }
-        }
-        fos?.use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+        }*/
+        val file = File(imagesDir, filename)
+        fos = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos)
         fos?.flush()
         fos?.close()
-        var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
+        var str : String = imagesDir.toString()
         str += "/$filename"
         return str
     }
