@@ -110,7 +110,6 @@ class BlockUIService : Service(), CoroutineScope {
         startService(screenService!!)
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
         str += "/inaut.jpg"
-        Thread.sleep(2000)
         val monitor = object : TimerTask() {
             override fun run() {
                 println("/////////STARTED//////")

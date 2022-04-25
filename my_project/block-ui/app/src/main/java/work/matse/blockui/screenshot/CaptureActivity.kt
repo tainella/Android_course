@@ -21,15 +21,9 @@ class CaptureActivity : Activity() {
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
-    fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
-        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return manager.getRunningServices(Integer.MAX_VALUE)
-            .any { it.service.className == serviceClass.name }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        println("@@@@@@@CAPTURE ACTIVITY STARTED@@@@@@")
+
         Handler().postDelayed({
                 mediaProjectionManager = getSystemService(Service.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                 startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), REQUEST_CAPTURE)

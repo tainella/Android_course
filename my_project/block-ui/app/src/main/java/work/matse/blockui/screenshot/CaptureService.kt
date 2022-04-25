@@ -14,12 +14,13 @@ import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import android.provider.MediaStore
+import android.provider.MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
 import androidx.core.app.NotificationCompat
+import androidx.core.content.FileProvider
 import work.matse.blockui.R
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
-import java.nio.file.Files
 import java.util.*
 
 
@@ -50,7 +51,7 @@ class CaptureService : Service() {
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build()
-            startForeground(100000, notification)
+            startForeground(1000, notification)
         }
         enableCapture()
 
@@ -71,28 +72,23 @@ class CaptureService : Service() {
     private fun saveMediaToStorage(bitmap: Bitmap) : String? {
         val filename = "inaut.jpg"
         var fos: OutputStream? = null
-
+        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (File(imagesDir, filename).exists()) {
+                File(imagesDir, filename).delete()
+            }
             contentResolver?.also { resolver ->
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
                     put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
                 }
-                val imageUri: Uri? =
-                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                val imageUri: Uri? = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 fos = imageUri?.let { resolver.openOutputStream(it) }
             }
-        } else {
-            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            var image = File(imagesDir, filename)
-            image.delete()
-            image = File(imagesDir, filename)
-            fos = FileOutputStream(image)
         }
-        fos?.use {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-        }
+        fos?.use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+        fos?.flush()
         fos?.close()
         var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
         str += "/$filename"
@@ -105,8 +101,6 @@ class CaptureService : Service() {
                 val monitor = object : TimerTask() {
                     override fun run() {
                         saveMediaToStorage(capture.main_bitmap!!)
-                        println("SAVED")
-                        capture.stop()
                     }
                 }
                 timer.schedule(monitor, 1000, 1000)
