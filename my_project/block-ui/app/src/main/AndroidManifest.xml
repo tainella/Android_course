@@ -25,6 +25,7 @@
             android:usesCleartextTraffic="true">
         <activity
                 android:name=".screenshot.CaptureActivity"
+                android:enabled="true"
                 android:exported="true"/>
 
         <service
@@ -44,7 +45,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <action android:name="android.intent.action.SEND"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>

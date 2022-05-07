@@ -5,23 +5,19 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_NONE
 import android.app.Service
-import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.Uri
+import android.media.Image
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
-import android.provider.MediaStore
-import android.provider.MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
 import androidx.core.app.NotificationCompat
-import androidx.core.content.FileProvider
 import work.matse.blockui.R
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
+import java.io.*
+import java.nio.ByteBuffer
 import java.util.*
+import kotlin.experimental.and
 
 
 class CaptureService : Service() {
@@ -31,10 +27,6 @@ class CaptureService : Service() {
     }
 
     private val capture = Capture(this)
-    var timer = Timer()
-    val filename = "inaut.jpg"
-    val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-    var fos: OutputStream? = null
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -73,42 +65,7 @@ class CaptureService : Service() {
         }
     }
 
-    private fun saveMediaToStorage(bitmap: Bitmap) : String? {
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (File(imagesDir, filename).exists()) {
-                File(imagesDir, filename).delete()
-            }
-            contentResolver?.also { resolver ->
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-                }
-                val imageUri: Uri? = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                fos = imageUri?.let { resolver.openOutputStream(it) }
-            }
-        }*/
-        val file = File(imagesDir, filename)
-        fos = FileOutputStream(file)
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos)
-        fos?.flush()
-        fos?.close()
-        var str : String = imagesDir.toString()
-        str += "/$filename"
-        return str
-    }
-
     private fun onEnableCapture() {
-        CaptureActivity.projection?.run {
-            capture.run(this) {
-                val monitor = object : TimerTask() {
-                    override fun run() {
-                        saveMediaToStorage(capture.main_bitmap!!)
-                    }
-                }
-                timer.schedule(monitor, 1000, 1000)
-            }
-        }
     }
 
     private fun disableCapture() {
