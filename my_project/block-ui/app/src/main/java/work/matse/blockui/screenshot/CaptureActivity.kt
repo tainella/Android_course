@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Service
 import android.content.ContentValues
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
 import android.hardware.display.VirtualDisplay
@@ -12,14 +14,12 @@ import android.media.MediaScannerConnection
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
-import android.os.Handler
+import android.os.*
 import android.provider.MediaStore
 import work.matse.blockui.R
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.OutputStream
 import java.util.*
 
@@ -40,6 +40,7 @@ class CaptureActivity : Activity() {
     var screenWindowHeight: Int? = null
     var display: VirtualDisplay? = null
     private val capture = Capture(this)
+    val mainHandler = Handler(Looper.getMainLooper())
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
@@ -67,7 +68,7 @@ class CaptureActivity : Activity() {
                             capture.run(it) {
                                 val monitor = object : TimerTask() {
                                     override fun run() {
-                                        saveMediaToStorage(capture.main_bitmap!!)
+                                        saveToInternalStorage(capture.main_bitmap!!)
                                         println("TRYING TO SAVE")
                                     }
                                 }
@@ -87,7 +88,7 @@ class CaptureActivity : Activity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (File(imagesDir, filename).exists()) {
                 File(imagesDir, filename).delete()
-                Thread.sleep(1000)
+                mainHandler.postDelayed({}, 1000)
                 callBroadCast()
                 if(File(imagesDir, filename).exists()) {
                     println("ERROR IN DELETING")
@@ -113,6 +114,29 @@ class CaptureActivity : Activity() {
         var str : String = imagesDir.toString()
         str += "/$filename"
         return str
+    }
+
+    private fun saveToInternalStorage(bitmapImage: Bitmap): String? {
+        val cw = ContextWrapper(applicationContext)
+        // path to /data/data/yourapp/app_data/imageDir
+        val directory = cw.getDir("imageDir", Context.MODE_PRIVATE)
+        // Create imageDir
+        val mypath = File(directory, "inaut.jpg")
+        var fos: FileOutputStream? = null
+        try {
+            fos = FileOutputStream(mypath)
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            try {
+                fos!!.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return directory.absolutePath
     }
 
     fun callBroadCast() {

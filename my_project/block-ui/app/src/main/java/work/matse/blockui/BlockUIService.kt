@@ -2,10 +2,11 @@ package work.matse.blockui
 
 import android.app.Service
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.media.MediaRecorder
@@ -14,9 +15,7 @@ import android.os.Environment
 import android.os.IBinder
 import android.provider.AlarmClock.EXTRA_MESSAGE
 import android.view.*
-import android.widget.Button
-import android.widget.Toast
-import androidx.core.app.ServiceCompat.stopForeground
+import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
 import kotlinx.coroutines.*
@@ -30,8 +29,9 @@ import work.matse.blockui.screenshot.CaptureService
 import work.matse.blockui.server.API
 import work.matse.blockui.server.APIService
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.IOException
-import java.lang.Thread.sleep
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -111,11 +111,13 @@ class BlockUIService : Service(), CoroutineScope {
         }
         val screenService : Intent? = Intent(baseContext, CaptureService::class.java)
         startService(screenService!!)
-        var str : String = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)).toString()
-        str += "/inaut.jpg"
+        val cw = ContextWrapper(applicationContext)
+        // path to /data/data/yourapp/app_data/imageDir
+        val directory = cw.getDir("imageDir", Context.MODE_PRIVATE)
+        // Create imageDir
         val monitor = object : TimerTask() {
             override fun run() {
-                val file = File(str)
+                val file = File(directory, "inaut.jpg")
                 val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file)
                 val body1 = MultipartBody.Part.createFormData("image", file?.name, requestFile)
                 launchUI {
@@ -127,7 +129,7 @@ class BlockUIService : Service(), CoroutineScope {
                         val music = File(Environment.getExternalStorageDirectory().absolutePath + "/recording.mp3")
                         val requestFile2 = RequestBody.create(MediaType.parse("audio/mp3"), music)
                         val body2 = MultipartBody.Part.createFormData("music", music?.name, requestFile2)
-                        //mood = service.postscreen_getout(body1, body2)
+                        mood = service.postscreen_getout(body1, body2)
                     } //withIO помогает получать данные из другого потока, так быстрее
                 }
                 //file.delete()
@@ -195,6 +197,17 @@ class BlockUIService : Service(), CoroutineScope {
         return layoutParams
     }
 
+    /*private fun loadImageFromStorage(path: String) {
+        try {
+            val f = File(path, "profile.jpg")
+            val b = BitmapFactory.decodeStream(FileInputStream(f))
+            val img: ImageView = findViewById(R.id.imgPicker) as ImageView
+            img.setImageBitmap(b)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
+    }
+    */
 
     private fun getScreenShotFromView(v: View): Bitmap? {
         var screenshot = Bitmap.createBitmap(v.measuredWidth, v.measuredHeight, Bitmap.Config.ARGB_8888)
